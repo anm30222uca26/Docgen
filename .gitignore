@@ -1,0 +1,53 @@
+# ---- Python environment & build artifacts --------------------------------
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+
+# Compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test caches
+.pytest_cache/
+
+# Distribution / packaging
+*.egg-info/
+build/
+dist/
+
+
+# ---- Streamlit operational overhead --------------------------------------
+# Local secrets file — NEVER commit your API key.
+# Commit a `.streamlit/secrets.toml.example` instead if you want a template.
+.streamlit/secrets.toml
+
+# Local Streamlit config — gitignored by default. Commit a
+# `.streamlit/config.toml.example` template if you want to ship defaults.
+.streamlit/config.toml
+
+
+# ---- Local vector store / cache state -------------------------------------
+# ChromaDB persistent state. The in-memory mode never produces these, but the
+# persistent variant does — keep them out of git either way.
+.chroma/
+chroma.sqlite3
+*.db
+
+
+# ---- Operating system files ----------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+
+# ---- IDE / editor -------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
