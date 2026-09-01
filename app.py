@@ -28,21 +28,18 @@ from core import (
 
 
 # ---------------------------------------------------------------------------
-# API key resolution: secrets first, manual input fallback
+# API key resolution: read from st.secrets only.
+# No sidebar input — if the key is missing, the main page surfaces the error.
 # ---------------------------------------------------------------------------
 def resolve_groq_api_key() -> str:
-    """Return the Groq API key from st.secrets if present, else via sidebar."""
+    """Return the Groq API key from `st.secrets`, or "" if not configured."""
     try:
         if "GROQ_API_KEY" in st.secrets and st.secrets["GROQ_API_KEY"]:
-            return st.secrets["GROQ_API_KEY"]
+            return str(st.secrets["GROQ_API_KEY"])
     except Exception:
-        # No secrets file configured — fall through to manual input.
+        # No secrets file configured at all.
         pass
-    return st.sidebar.text_input(
-        "Groq API Key",
-        type="password",
-        help="Used by ChatGroq. Prefer setting GROQ_API_KEY in .streamlit/secrets.toml.",
-    )
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -64,14 +61,21 @@ for key, default in {
 }.items():
     st.session_state.setdefault(key, default)
 
+# Resolve the API key up-front. If missing, surface a clean error and stop
+# before rendering the sidebar / upload controls.
+api_key = resolve_groq_api_key()
+if not api_key:
+    st.error(
+        "🔑 No Groq API key found.\n\n"
+        "Add `GROQ_API_KEY = \"…\"` to `.streamlit/secrets.toml` and reload."
+    )
+    st.stop()
+
 # ---------------------------------------------------------------------------
-# Sidebar: configuration + upload
+# Sidebar: upload only (no API-key UI clutter)
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.header("1. Configuration")
-    api_key = resolve_groq_api_key()
-
-    st.header("2. Upload")
+    st.header("Upload repository")
     uploaded = st.file_uploader(
         "Repository ZIP",
         type=["zip"],
@@ -89,9 +93,6 @@ with st.sidebar:
 # Processing pipeline
 # ---------------------------------------------------------------------------
 if process_btn:
-    if not api_key:
-        st.error("Please provide a Groq API key (via secrets or the sidebar).")
-        st.stop()
     if not uploaded:
         st.error("Please upload a repository ZIP file.")
         st.stop()
